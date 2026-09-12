@@ -1,0 +1,11 @@
+{
+    "for loop": {
+        "prefix": "for",
+        "body": [
+            "for (${1:int} ${2:i} = ${3:0}; ${2:i} < ${4:n}; ++${2:i}) {",
+            "\t$0",
+            "}"
+        ],
+        "description": "for cycle"
+    }
+}
