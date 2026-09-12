@@ -12,7 +12,7 @@ class chip8 {
         void debugRender();
         bool loadApplication(const char * filename);
 
-        uint8_t gfx[54 * 32];
+        uint8_t gfx[64 * 32];
         uint8_t key[16];
 
     private:

@@ -5,7 +5,9 @@
             "label": "Run Executable",
             "type": "shell",
             "command": "${workspaceFolder}/build/chip8",
-            "args": [],
+            "args": [
+                "../invaders.c8"
+            ],
             "dependsOn": "cmake build",
             "options": {
                 "cwd": "${workspaceFolder}/build"

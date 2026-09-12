@@ -36,7 +36,9 @@ chip8::~chip8()
 
 void chip8::init()
 {
+    printf("init() called\n");
     pc = 0x200;
+    printf("init: pc=0x%03X\n", pc);
     opcode = 0;
     I = 0;
     sp = 0;
@@ -75,14 +77,14 @@ void chip8::init()
 void chip8::emulateCycle()
 {
     opcode = memory[pc] << 8 | memory[pc +1];
-
-    printf("opcode: %X\r\n", opcode);
+    printf("pc=0x%03X opcode=0x%04X\n", pc, opcode);
+    if (opcode == 0xF090) exit(0);
+    // printf("opcode: %X\r\n", opcode);
 
     switch (opcode & 0xF000)
     {
         case 0x0000:
         {
-            printf("opcode & 0xF000: %X\r\n", opcode);
             switch (opcode & 0x000F)    
             {
                 case 0x0000:
@@ -106,10 +108,25 @@ void chip8::emulateCycle()
                 
                 default:
                     printf("Unknown opcode [0x0000]: 0x%X\n", opcode);
+                    exit(0);
             }    
             break;
         }
         
+        case 0x1000: // 0x1NNN: Jumps to address NNN
+		{	
+            pc = opcode & 0x0FFF;
+		    break;
+        }
+
+		case 0x2000: // 0x2NNN: Calls subroutine at NNN.
+		{
+            stack[sp] = pc;			// Store current address in stack
+            ++sp;					// Increment stack pointer
+            pc = opcode & 0x0FFF;	// Set the program counter to the address at NNN
+            break;
+        }
+
         case 0x3000:
         {
             if (V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF)) {
@@ -144,12 +161,14 @@ void chip8::emulateCycle()
         {
             V[(opcode & 0x0F00) >> 8] = (opcode & 0x00FF);
             pc += 2;
+            break;
         }
 
         case 0x7000:
         {
             V[(opcode & 0x0F00) >> 8] += (opcode & 0x00FF);
             pc += 2;
+            break;
         }
 
         case 0x8000:
@@ -191,7 +210,7 @@ void chip8::emulateCycle()
                     } else {
                         V[0xF] = 0;
                     }
-                    V[(opcode & 0x00F0) >> 4] += V[(opcode & 0x0F00) >> 8];
+                    V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];  // VX += VY
                     pc += 2;
                     break;
                 }
@@ -240,7 +259,7 @@ void chip8::emulateCycle()
                 default:
                 {
                     printf("im not going to proccess this\r\n");
-                    break;
+                    // break;
                 }
             }
             break;
@@ -266,6 +285,7 @@ void chip8::emulateCycle()
         case 0xB000:
         {
             pc = V[0] + (opcode & 0x0FFF);
+            break;
         }
 
         case 0xC000:
@@ -274,14 +294,6 @@ void chip8::emulateCycle()
             pc += 2;
             break;
         }
-
-        case 0x2000:
-        {
-            stack[sp] = pc;
-            ++sp;
-            pc = opcode & 0x0FFF;
-        break;
-        }    
         
         case 0x0004:
         {
@@ -292,16 +304,7 @@ void chip8::emulateCycle()
             }
             V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
             pc += 2;
-        break;
-        }
-
-        case 0x0033:
-        {
-            memory[I]     = V[(opcode & 0x0F00) >> 8] / 100;
-            memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
-            memory[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
-            pc += 2;  
-        break;
+            break;
         }
 
         case 0xD000:
@@ -326,10 +329,9 @@ void chip8::emulateCycle()
 
             drawFlag = true;
             pc += 2;
-        break;
+            break;
         }
         
-
         case 0xE000:
         {
             switch (opcode & 0x00FF)
@@ -354,6 +356,8 @@ void chip8::emulateCycle()
                 
                 default:
                     printf("Unknown opcode: 0x%X\n", opcode);
+                    exit(0);
+                  
             }
             break;
         }
@@ -428,13 +432,13 @@ void chip8::emulateCycle()
 
                 case 0x0055: // FX55: Stores V0 to VX in memory starting at address I					
 				{
-                        for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i)
-                            memory[I + i] = V[i];	
+                    for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i)
+                        memory[I + i] = V[i];	
 
-                        // On the original interpreter, when the operation is done, I = I + X + 1.
-                        I += ((opcode & 0x0F00) >> 8) + 1;
-                        pc += 2;
-                        break;
+                    // On the original interpreter, when the operation is done, I = I + X + 1.
+                    I += ((opcode & 0x0F00) >> 8) + 1;
+                    pc += 2;
+                    break;
                 }
 
 				case 0x0065: // FX65: Fills V0 to VX with values from memory starting at address I					
@@ -451,16 +455,17 @@ void chip8::emulateCycle()
                 default:
                 {
                     printf ("Unknown opcode [0xF000]: 0x%X\n", opcode);
-                    break;
+                    exit(0);
                 }
             }
-            
+            break;
         }
 
         default:
         {
-            printf("Unknown opcode: 0x%X\n", opcode);
-            break;
+            printf("Unknown opcode: 0x%X.\n", opcode);
+            exit(0);
+            // pc += 2;
         }
     }
 
@@ -491,7 +496,8 @@ bool chip8::loadApplication(const char * filename)
     }
 
     fseek(pFile, 0, SEEK_END);
-    int64_t lSize = ftell(pFile);
+    long lSize = ftell(pFile);
+    rewind(pFile);
     printf("Filesize: %d\n", (int)lSize);
 
     char * buffer  = (char*)malloc(sizeof(char) * lSize);
@@ -502,25 +508,41 @@ bool chip8::loadApplication(const char * filename)
 	}
 
 	// Copy the file into the buffer
-	size_t result = fread (buffer, 1, lSize, pFile);
+	size_t result = fread(buffer, 1, lSize, pFile);
 	if (result != lSize) 
 	{
 		fputs("Reading error",stderr); 
 		return false;
 	}
 
+    int inst = 32;
+
+    
+
     // Copy buffer to Chip8 memory
 	if((4096-512) > lSize)
 	{
 		for(int i = 0; i < lSize; ++i)
 			memory[i + 512] = buffer[i];
+
+        printf("Memory table (first %u instructions): \r\n", inst);
+
+            for (int n = 0; n < inst; ++n) {
+                int i = 512 + n * 2;
+                printf(" [%d] = 0x%04X ", n, (memory[i] << 8) | memory[i + 1]);
+                if ((n + 1) % 8 == 0) printf("\r\n");
+            }
+            printf("\r\n");
 	}
 	else
 		printf("Error: ROM too big for memory");
 	
+    
+
 	// Close file, free buffer
 	fclose(pFile);
 	free(buffer);
 
+    printf("After load: pc=0x%03X\n", pc);
 	return true;
 }
