@@ -86,22 +86,176 @@ void chip8::emulateCycle()
             switch (opcode & 0x000F)    
             {
                 case 0x0000:
+                {
                     for (uint16_t i = 0; i < 2048; i++){
                         gfx[i] = 0x0;
                     }
                     drawFlag = true;
                     pc += 2;
-                break;
+                    break;
+                }
 
                 case 0x000E:
-                    
-                break;
+                {
+                    --sp;
+                    pc = stack[sp];
+                    pc += 2;
+                    break;
+                }
+                
                 
                 default:
                     printf("Unknown opcode [0x0000]: 0x%X\n", opcode);
             }    
             break;
         }
+        
+        case 0x3000:
+        {
+            if (V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF)) {
+                pc += 4;
+            } else {
+                pc += 2;
+            }
+            break;
+        }
+        
+        case 0x4000:
+        {
+            if (V[(opcode & 0x0F00) >> 8] != (opcode & 0x00FF)) {
+                pc += 4;
+            } else {
+                pc += 2;
+            }
+            break;
+        }
+
+        case 0x5000:
+        {
+            if (V[(opcode & 0x0F00) >> 8] == V[(opcode & 0x00F0) >> 4]) {
+                pc += 4;
+            } else {
+                pc += 2;
+            }
+            break;
+        }
+
+        case 0x6000:
+        {
+            V[(opcode & 0x0F00) >> 8] = (opcode & 0x00FF);
+            pc += 2;
+        }
+
+        case 0x7000:
+        {
+            V[(opcode & 0x0F00) >> 8] += (opcode & 0x00FF);
+            pc += 2;
+        }
+
+        case 0x8000:
+        {
+            switch(opcode & 0x000F)
+            {
+                case 0x0000:
+                {
+                    V[(opcode & 0x00F0) >> 4] = V[(opcode & 0x0F00) >> 8];
+                    pc += 2;
+                    break;
+                }
+
+                case 0x0001:
+                {
+                    V[(opcode & 0x00F0) >> 4] |= V[(opcode & 0x0F00) >> 8];
+                    pc += 2;
+                    break;
+                }
+
+                case 0x0002:
+                {
+                    V[(opcode & 0x00F0) >> 4] &= V[(opcode & 0x0F00) >> 8];
+                    pc += 2;
+                    break;
+                }
+
+                case 0x0003:
+                {
+                    V[(opcode & 0x00F0) >> 4] ^= V[(opcode & 0x0F00) >> 8];
+                    pc += 2;
+                    break;
+                }
+
+                case 0x0004:
+                {
+                    if (V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8])) {
+                        V[0xF] = 1;
+                    } else {
+                        V[0xF] = 0;
+                    }
+                    V[(opcode & 0x00F0) >> 4] += V[(opcode & 0x0F00) >> 8];
+                    pc += 2;
+                    break;
+                }
+
+                case 0x0005:
+                {
+                    if (V[(opcode & 0x00F0) >> 4] > V[(opcode & 0x0F00) >> 8]) {
+                        V[0xF] = 0;
+                    } else {
+                        V[0xF] = 1;
+                    }
+                    V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];
+                    pc += 2;
+                    break;
+                }
+
+                case 0x0006:
+                {
+                    // in example order is different
+                    V[(opcode & 0x0F00) >> 8] >>= 1;
+                    V[0xF] = V[(opcode & 0x0F00) >> 8] & 0x1;
+                    pc += 2;
+                    break;
+                }
+
+                case 0x0007:
+                {
+                    if (V[(opcode & 0x00F0) >> 4] >= V[(opcode & 0x0F00) >> 8]) {
+                        V[0xF] = 1;
+                    } else {
+                        V[0xF] = 0;
+                    }
+                    V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] - V[(opcode & 0x0F00) >> 8]);
+                    pc += 2;
+                    break;
+                }
+
+                case 0x000E:
+                {
+                    V[0xF] = V[(opcode & 0x0F00) >> 8] >> 7;
+                    V[(opcode & 0x0F00) >> 8] <<= 1;
+                    pc += 2;
+                    break;
+                }
+
+                default:
+                {
+                    printf("im not going to proccess this\r\n");
+                    break;
+                }
+            }
+            break;
+        }
+
+        case 0x9000:
+        {
+            if (V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4]) {
+                pc += 4;
+            } else {
+                pc += 2;
+            }
+            break;
+        }
+
         case 0xA000:
         {
             I = opcode & 0x0FFF;
@@ -109,6 +263,17 @@ void chip8::emulateCycle()
             break;
         }
         
+        case 0xB000:
+        {
+            pc = V[0] + (opcode & 0x0FFF);
+        }
+
+        case 0xC000:
+        {
+            V[(opcode & 0x0F00) >> 8] = (rand() % 0xFF) & (opcode & 0x00FF);
+            pc += 2;
+            break;
+        }
 
         case 0x2000:
         {
@@ -118,7 +283,6 @@ void chip8::emulateCycle()
         break;
         }    
         
-
         case 0x0004:
         {
             if (V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8])) {
@@ -177,6 +341,16 @@ void chip8::emulateCycle()
                         pc += 2;
                     }
                 break;
+
+                case 0x00A1:
+                {
+                    if (key[V[(opcode & 0x0F00) >> 8]]) {
+                        pc += 4;
+                    } else {
+                        pc += 2;
+                    }
+                    break;
+                }
                 
                 default:
                     printf("Unknown opcode: 0x%X\n", opcode);
@@ -184,9 +358,110 @@ void chip8::emulateCycle()
             break;
         }
 
+        case 0xF000:
+        {
+            switch (opcode & 0x00FF)
+            {
+                case 0x0007:
+                {
+                    V[(opcode & 0x0F00) >> 8] = delay_timer;
+                    pc += 2;
+                    break;
+                }
+
+                case 0x000A:
+                {
+                    bool keyPress = false;
+
+                    for (uint16_t i = 0; i < 16; i++) {
+                        if (key[i] != 0)
+                        {
+                            V[(opcode & 0x0F00) >> 8] = i;
+							keyPress = true;
+                        }
+                    }
+
+                    if (!keyPress) {
+                        return;
+                    }
+
+                    pc += 2;
+                    break;
+                }
+
+                case 0x0015:
+                {
+                    delay_timer = V[(opcode & 0x0F00) >> 8];
+                    pc += 2;
+                    break;
+                }
+
+                case 0x0018:
+                {
+                    sound_timer = V[(opcode & 0x0F00) >> 8];
+                    pc += 2;
+                    break;
+                }
+
+                case 0x001E:
+                {
+                    I += V[(opcode & 0x0F00) >> 8];
+                    pc += 2;
+                    break;
+                }
+
+                case 0x0029:
+                {
+                    I = V[(opcode & 0x0F00) >> 8] * 0x5;
+                    pc += 2;
+                    break;
+                }
+
+                case 0x0033:
+                {
+                    memory[I]     = (V[(opcode & 0x0F00) >> 8] / 100);
+                    memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
+                    memory[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
+                    pc += 2;
+                    break;
+                }
+
+                case 0x0055: // FX55: Stores V0 to VX in memory starting at address I					
+				{
+                        for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i)
+                            memory[I + i] = V[i];	
+
+                        // On the original interpreter, when the operation is done, I = I + X + 1.
+                        I += ((opcode & 0x0F00) >> 8) + 1;
+                        pc += 2;
+                        break;
+                }
+
+				case 0x0065: // FX65: Fills V0 to VX with values from memory starting at address I					
+				{	
+                    for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i)
+						V[i] = memory[I + i];			
+
+					// On the original interpreter, when the operation is done, I = I + X + 1.
+					I += ((opcode & 0x0F00) >> 8) + 1;
+					pc += 2;
+				    break;
+                }
+
+                default:
+                {
+                    printf ("Unknown opcode [0xF000]: 0x%X\n", opcode);
+                    break;
+                }
+            }
+            
+        }
+
         default:
+        {
             printf("Unknown opcode: 0x%X\n", opcode);
             break;
+        }
     }
 
     if (delay_timer > 0) {
@@ -200,4 +475,52 @@ void chip8::emulateCycle()
         --sound_timer;
     }
 
+}
+
+bool chip8::loadApplication(const char * filename)
+{
+    init();
+
+    printf("Loading: %s\n", filename);
+
+    FILE * pFile = fopen(filename, "rb");
+    if (pFile == NULL)
+    {
+        fputs ("File error", stderr);
+        return false;
+    }
+
+    fseek(pFile, 0, SEEK_END);
+    int64_t lSize = ftell(pFile);
+    printf("Filesize: %d\n", (int)lSize);
+
+    char * buffer  = (char*)malloc(sizeof(char) * lSize);
+    if (buffer == NULL) 
+	{
+		fputs ("Memory error", stderr); 
+		return false;
+	}
+
+	// Copy the file into the buffer
+	size_t result = fread (buffer, 1, lSize, pFile);
+	if (result != lSize) 
+	{
+		fputs("Reading error",stderr); 
+		return false;
+	}
+
+    // Copy buffer to Chip8 memory
+	if((4096-512) > lSize)
+	{
+		for(int i = 0; i < lSize; ++i)
+			memory[i + 512] = buffer[i];
+	}
+	else
+		printf("Error: ROM too big for memory");
+	
+	// Close file, free buffer
+	fclose(pFile);
+	free(buffer);
+
+	return true;
 }
