@@ -24,7 +24,7 @@ class chip8 {
         uint16_t getOpcode() const { return opcode; }
 
         uint8_t  getV(uint8_t i)     const { return V[i]; }
-        uint8_t  getStack(uint8_t i) const { return stack[i]; }
+        uint16_t  getStack(uint8_t i) const { return stack[i]; }
         uint8_t  getMemory(uint16_t addr) const { return memory[addr]; }
         uint8_t  getDelayTimer()     const { return delay_timer; }
         uint8_t  getSoundTimer()     const { return sound_timer; }

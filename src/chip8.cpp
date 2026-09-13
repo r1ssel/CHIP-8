@@ -171,38 +171,40 @@ void chip8::emulateCycle()
             break;
         }
 
+        
         case 0x8000:
         {
             switch(opcode & 0x000F)
             {
+                // 8XY0 - Sets VX to the value of VY
                 case 0x0000:
                 {
-                    V[(opcode & 0x00F0) >> 4] = V[(opcode & 0x0F00) >> 8];
+                    V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
                 }
-
+                // 8XY1 - Sets VX to VX or VY. (bitwise OR operation).
                 case 0x0001:
                 {
-                    V[(opcode & 0x00F0) >> 4] |= V[(opcode & 0x0F00) >> 8];
+                    V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
                 }
-
+                // 8XY2 - Sets VX to VX and VY. (bitwise AND operation).
                 case 0x0002:
                 {
-                    V[(opcode & 0x00F0) >> 4] &= V[(opcode & 0x0F00) >> 8];
+                    V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
                 }
-
+                // 8XY3 - Sets VX to VX xor VY.
                 case 0x0003:
                 {
-                    V[(opcode & 0x00F0) >> 4] ^= V[(opcode & 0x0F00) >> 8];
+                    V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
                     pc += 2;
                     break;
                 }
-
+                // 8XY4 - Adds VY to VX. VF is set to 1 when there's an overflow, and to 0 when there is not.
                 case 0x0004:
                 {
                     if (V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8])) {
@@ -214,7 +216,7 @@ void chip8::emulateCycle()
                     pc += 2;
                     break;
                 }
-
+                // 8XY5 - VY is subtracted from VX. VF is set to 0 when there's an underflow, and 1 when there is not. (i.e. VF set to 1 if VX >= VY and 0 if not).
                 case 0x0005:
                 {
                     if (V[(opcode & 0x00F0) >> 4] > V[(opcode & 0x0F00) >> 8]) {
@@ -226,7 +228,7 @@ void chip8::emulateCycle()
                     pc += 2;
                     break;
                 }
-
+                // 8XY6 - Shifts VX to the right by 1, then stores the least significant bit of VX prior to the shift into VF.
                 case 0x0006:
                 {
                     // in example order is different
@@ -235,7 +237,7 @@ void chip8::emulateCycle()
                     pc += 2;
                     break;
                 }
-
+                // 8XY7 - Sets VX to VY minus VX. VF is set to 0 when there's an underflow, and 1 when there is not. (i.e. VF set to 1 if VY >= VX).
                 case 0x0007:
                 {
                     if (V[(opcode & 0x00F0) >> 4] >= V[(opcode & 0x0F00) >> 8]) {
@@ -247,7 +249,7 @@ void chip8::emulateCycle()
                     pc += 2;
                     break;
                 }
-
+                // 8XYE - Shifts VX to the left by 1, then sets VF to 1 if the most significant bit of VX prior to that shift was set, or to 0 if it was unset.
                 case 0x000E:
                 {
                     V[0xF] = V[(opcode & 0x0F00) >> 8] >> 7;
