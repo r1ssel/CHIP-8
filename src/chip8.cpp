@@ -71,6 +71,9 @@ void chip8::init()
 	// Clear screen once
 	drawFlag = true;
 
+    waitingForKey = false;
+    waitingKeyIndex = 0;
+
     srand (time(NULL));
 }
 
@@ -377,21 +380,24 @@ void chip8::emulateCycle()
 
                 case 0x000A:
                 {
-                    bool keyPress = false;
-
-                    for (uint16_t i = 0; i < 16; i++) {
-                        if (key[i] != 0)
-                        {
-                            V[(opcode & 0x0F00) >> 8] = i;
-							keyPress = true;
+                    if (!waitingForKey) {
+                        // Фаза 1: ищем первую нажатую клавишу
+                        for (uint8_t i = 0; i < 16; i++) {
+                            if (key[i] != 0) {
+                                waitingForKey = true;
+                                waitingKeyIndex = i;
+                                break;                     // ← выходим из цикла
+                            }
+                        }
+                    } else {
+                        // Фаза 2: ждём, пока эта клавиша отпустится
+                        if (key[waitingKeyIndex] == 0) {
+                            V[(opcode & 0x0F00) >> 8] = waitingKeyIndex;
+                            waitingForKey = false;
+                            pc += 2;                        // ← двигаем PC только теперь
                         }
                     }
-
-                    if (!keyPress) {
-                        return;
-                    }
-
-                    pc += 2;
+                    // Если waitingForKey == true — PC не двигается, ждём
                     break;
                 }
 

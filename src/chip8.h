@@ -52,5 +52,8 @@ class chip8 {
         uint8_t delay_timer;
         uint8_t sound_timer;
 
+        bool waitingForKey = false;
+        uint8_t waitingKeyIndex = 0;
+
         
 };

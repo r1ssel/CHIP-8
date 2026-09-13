@@ -80,7 +80,7 @@ void display()
     static int lastTime = 0;
     int currentTime = glutGet(GLUT_ELAPSED_TIME);
 
-    if (currentTime - lastTime >= 16) {   // ~60 FPS
+    if (currentTime - lastTime >= 25) {   // ~60 FPS
         for (int i = 0; i < 10; i++) {    // 10 инструкций за кадр
             myChip.emulateCycle();
         }
