@@ -4,6 +4,7 @@
 #include <time.h>
 
 
+
 unsigned char chip8_fontset[80] =
 { 
     0xF0, 0x90, 0x90, 0x90, 0xF0, //0
@@ -24,6 +25,78 @@ unsigned char chip8_fontset[80] =
     0xF0, 0x80, 0xF0, 0x80, 0x80  //F
 };
 
+
+
+void chip8::cpuNULL() 
+{
+	// Do Nothing
+}
+
+chip8::chip8(){
+    Chip8Table[0x0] = &chip8::cpu0NNN;
+        // Chip8System[0xE0] = &chip8::cpu00E0;
+        // Chip8System[0xEE] = &chip8::cpu00EE;
+
+    Chip8Table[0x1] = &chip8::cpu1NNN;
+    Chip8Table[0x2] = &chip8::cpu2NNN;
+    Chip8Table[0x3] = &chip8::cpu3XNN;
+    Chip8Table[0x4] = &chip8::cpu4XNN;
+    Chip8Table[0x5] = &chip8::cpu5XY0;
+    Chip8Table[0x6] = &chip8::cpu6XNN;
+    Chip8Table[0x7] = &chip8::cpu7XNN;
+
+    Chip8Table[0x8] = &chip8::cpu8XYN;
+        // Chip8Arithmetic[0x0] = &chip8::cpu8XY0;
+        // Chip8Arithmetic[0x1] = &chip8::cpu8XY1;
+        // Chip8Arithmetic[0x2] = &chip8::cpu8XY2;
+        // Chip8Arithmetic[0x3] = &chip8::cpu8XY3;
+        // Chip8Arithmetic[0x4] = &chip8::cpu8XY4;
+        // Chip8Arithmetic[0x5] = &chip8::cpu8XY5;
+        // Chip8Arithmetic[0x6] = &chip8::cpu8XY6;
+        // Chip8Arithmetic[0x7] = &chip8::cpu8XY7;
+        // Chip8Arithmetic[0xE] = &chip8::cpu8XYE;
+
+    Chip8Table[0x9] = &chip8::cpu9XY0;
+    Chip8Table[0xA] = &chip8::cpuANNN;
+    Chip8Table[0xB] = &chip8::cpuBNNN;
+    Chip8Table[0xC] = &chip8::cpuCXNN;
+    Chip8Table[0xD] = &chip8::cpuDXYN;
+
+    Chip8Table[0xE] = &chip8::cpuEXNN;
+        // Chip8Keyboard[0x9E] = &chip8::cpuEX9E;
+        // Chip8Keyboard[0xA1] = &chip8::cpuEXA1;
+
+    Chip8Table[0xF] = &chip8::cpuFXNN;
+        // Chip8Misc[0x07] = &chip8::cpuFX07;
+        // Chip8Misc[0x0A] = &chip8::cpuFX0A;
+        // Chip8Misc[0x15] = &chip8::cpuFX15;
+        // Chip8Misc[0x18] = &chip8::cpuFX18;
+        // Chip8Misc[0x1E] = &chip8::cpuFX1E;
+        // Chip8Misc[0x29] = &chip8::cpuFX29;
+        // Chip8Misc[0x33] = &chip8::cpuFX33;
+        // Chip8Misc[0x55] = &chip8::cpuFX55;
+        // Chip8Misc[0x65] = &chip8::cpuFX65;
+
+    for (int i = 0; i < 0xFF; i++) {
+        Chip8System[i] = &chip8::cpuNULL;
+    }
+
+    for (int i = 0; i < 16; i++) {
+        Chip8Arithmetic[i] = &chip8::cpuNULL;
+    }
+
+    for (int i = 0; i < 0xFF; i++) {
+        Chip8Keyboard[i] = &chip8::cpuNULL;
+    }
+
+    for (int i = 0; i < 0xFF; i++) {
+        Chip8Misc[i] = &chip8::cpuNULL;
+    }
+    
+    
+}
+
+
 chip8::chip8()
 {
 	// empty
@@ -32,6 +105,15 @@ chip8::chip8()
 chip8::~chip8()
 {
 	// empty
+}
+
+void chip8::run()
+{
+    opcode = memory[pc] << 8 | memory[pc + 1];
+    (this->Chip8Table[opcode >> 12]);
+
+    if (delay_timer > 0) --delay_timer;
+    if (sound_timer > 0) --sound_timer;
 }
 
 void chip8::init()
@@ -558,4 +640,98 @@ bool chip8::loadApplication(const char * filename)
 
     printf("After load: pc=0x%03X\n", pc);
 	return true;
+}
+
+void chip8::cpu00E0() {
+    for (uint16_t i = 0; i < 2048; i++) gfx[i] = 0;
+    drawFlag = true;
+    pc += 2;
+}
+
+void chip8::cpu00EE()
+{
+    --sp;
+    pc = stack[sp];
+    pc += 2;
+}
+
+void chip8::cpu1NNN() {
+    pc = opcode & 0x0FFF; 
+}
+
+void chip8::cpu2NNN()
+{
+    stack[sp] = pc;
+    ++sp;
+    pc = opcode & 0x0FFF;
+}
+
+void chip8::cpu3XNN()
+{
+    if (V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF)) pc += 4;
+    else pc += 2;
+}
+
+void chip8::cpu4XNN()
+{
+    if (V[(opcode & 0x0F00) >> 8] != (opcode & 0x00FF)) pc += 4;
+    else pc += 2;
+}
+
+void chip8::cpu5XY0()
+{
+    if (V[(opcode & 0x0F00) >> 8] == V[(opcode & 0x00F0) >> 4]) pc += 4;
+    else pc += 2;
+}
+
+void chip8::cpu6XNN()
+{
+    V[(opcode & 0x0F00) >> 8] = opcode & 0x00FF;
+    pc += 2;
+}
+
+void chip8::cpu7XNN()
+{
+    V[(opcode & 0x0F00) >> 8] += opcode & 0x00FF;
+    pc += 2;
+}
+
+void chip8::cpu9XY0()
+{
+    if (V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4]) pc += 4;
+    else pc += 2;
+}
+
+void chip8::cpuANNN() { I = opcode & 0x0FFF; pc += 2; }
+
+void chip8::cpuBNNN() { pc = V[0] + (opcode & 0x0FFF); }
+
+void chip8::cpuCXNN()
+{
+    V[(opcode & 0x0F00) >> 8] = (rand() % 0x100) & (opcode & 0x00FF);
+    pc += 2;
+}
+
+void chip8::cpuDXYN()
+{
+    uint16_t x = V[(opcode & 0x0F00) >> 8];
+    uint16_t y = V[(opcode & 0x00F0) >> 4];
+    uint16_t height = opcode & 0x000F;
+    uint16_t pixel = 0;
+
+    V[0xF] = 0;
+    for (uint16_t yline = 0; yline < height; yline++) {
+        pixel = memory[I + yline];
+        for (uint16_t xline = 0; xline < 8; xline++) {
+            if ((pixel & (0x80 >> xline)) != 0) {
+                uint16_t px = (x + xline) % 64;
+                uint16_t py = (y + yline) % 32;
+                uint16_t idx = px + py * 64;
+                if (gfx[idx] == 1) V[0xF] = 1;
+                gfx[idx] ^= 1;
+            }
+        }
+    }
+    drawFlag = true;
+    pc += 2;
 }

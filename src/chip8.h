@@ -9,6 +9,8 @@ class chip8 {
         bool drawFlag;
 
         void emulateCycle();
+        void run();
+
         void debugRender();
         bool loadApplication(const char * filename);
 
@@ -16,7 +18,7 @@ class chip8 {
         uint8_t key[16];
 
         void init();
-
+        
         // tests api
         uint16_t getPc()     const { return pc; }
         uint16_t getI()      const { return I; }
@@ -55,5 +57,60 @@ class chip8 {
         bool waitingForKey = false;
         uint8_t waitingKeyIndex = 0;
 
+        void (chip8::*Chip8Table[0xF])();        // по старшему nibble
         
+        void (chip8::*Chip8Arithmetic[0xF])();   // по 0x000F для 0x8
+        void (chip8::*Chip8System[0xFF])();      // по 0x00FF для 0x0
+        void (chip8::*Chip8Keyboard[0xFF])();    // по 0x00FF для 0xE
+        void (chip8::*Chip8Misc[0xFF])();        // по 0x00FF для 0xF
+
+        void cpuNULL();
+
+        // Simple in Chip8Table
+        void cpu1NNN();   // 0x1: jump
+        void cpu2NNN();   // 0x2: call
+        void cpu3XNN();   // 0x3: skip if VX == NN
+        void cpu4XNN();   // 0x4: skip if VX != NN
+        void cpu5XY0();   // 0x5: skip if VX == VY
+        void cpu6XNN();   // 0x6: VX = NN
+        void cpu7XNN();   // 0x7: VX += NN
+        void cpu9XY0();   // 0x9: skip if VX != VY
+        void cpuANNN();   // 0xA: I = NNN
+        void cpuBNNN();   // 0xB: jump to NNN + V0
+        void cpuCXNN();   // 0xC: VX = rand() & NN
+        void cpuDXYN();   // 0xD: draw sprite
+
+        // Chip8System
+        void cpu0NNN();  
+        void cpu00E0();
+        void cpu00EE();
+        
+        // Chip8Arithmetic
+        void cpu8XYN(); 
+        void cpu8XY0(); 
+        void cpu8XY1();
+        void cpu8XY2();
+        void cpu8XY3();
+        void cpu8XY4();
+        void cpu8XY5();
+        void cpu8XY6();
+        void cpu8XY7();
+        void cpu8XYE();
+
+        // Chip8Keyboard
+        void cpuEXNN(); 
+        void cpuEX9E();
+        void cpuEXA1();
+
+        // Chip8Misc
+        void cpuFXNN(); 
+        void cpuFX07();
+        void cpuFX0A();
+        void cpuFX15();
+        void cpuFX18();
+        void cpuFX1E();
+        void cpuFX29();
+        void cpuFX33();
+        void cpuFX55();
+        void cpuFX65();
 };
