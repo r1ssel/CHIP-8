@@ -57,12 +57,12 @@ class chip8 {
         bool waitingForKey = false;
         uint8_t waitingKeyIndex = 0;
 
-        void (chip8::*Chip8Table[0xF])();        // по старшему nibble
+        void (chip8::*Chip8Table[16])();        // смотрит по старшему байту
         
-        void (chip8::*Chip8Arithmetic[0xF])();   // по 0x000F для 0x8
-        void (chip8::*Chip8System[0xFF])();      // по 0x00FF для 0x0
-        void (chip8::*Chip8Keyboard[0xFF])();    // по 0x00FF для 0xE
-        void (chip8::*Chip8Misc[0xFF])();        // по 0x00FF для 0xF
+        void (chip8::*Chip8Arithmetic[16 ])();    // по 0x000F для 0x8
+        void (chip8::*Chip8System    [256])();    // по 0x00FF для 0x0
+        void (chip8::*Chip8Keyboard  [256])();    // по 0x00FF для 0xE
+        void (chip8::*Chip8Misc      [256])();    // по 0x00FF для 0xF
 
         void cpuNULL();
 

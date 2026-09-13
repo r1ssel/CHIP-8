@@ -33,56 +33,13 @@ void chip8::cpuNULL()
 }
 
 chip8::chip8(){
-    // Chip8Table[0x0] = &chip8::cpu0NNN;
-    // Chip8System[0xE0] = &chip8::cpu00E0;
-    // Chip8System[0xEE] = &chip8::cpu00EE;
-
-    Chip8Table[0x1] = &chip8::cpu1NNN;
-    Chip8Table[0x2] = &chip8::cpu2NNN;
-    Chip8Table[0x3] = &chip8::cpu3XNN;
-    Chip8Table[0x4] = &chip8::cpu4XNN;
-    Chip8Table[0x5] = &chip8::cpu5XY0;
-    Chip8Table[0x6] = &chip8::cpu6XNN;
-    Chip8Table[0x7] = &chip8::cpu7XNN;
-
-    // Chip8Table[0x8] = &chip8::cpu8XYN;
-        // Chip8Arithmetic[0x0] = &chip8::cpu8XY0;
-        // Chip8Arithmetic[0x1] = &chip8::cpu8XY1;
-        // Chip8Arithmetic[0x2] = &chip8::cpu8XY2;
-        // Chip8Arithmetic[0x3] = &chip8::cpu8XY3;
-        // Chip8Arithmetic[0x4] = &chip8::cpu8XY4;
-        // Chip8Arithmetic[0x5] = &chip8::cpu8XY5;
-        // Chip8Arithmetic[0x6] = &chip8::cpu8XY6;
-        // Chip8Arithmetic[0x7] = &chip8::cpu8XY7;
-        // Chip8Arithmetic[0xE] = &chip8::cpu8XYE;
-
-    Chip8Table[0x9] = &chip8::cpu9XY0;
-    Chip8Table[0xA] = &chip8::cpuANNN;
-    Chip8Table[0xB] = &chip8::cpuBNNN;
-    Chip8Table[0xC] = &chip8::cpuCXNN;
-    Chip8Table[0xD] = &chip8::cpuDXYN;
-
-    // Chip8Table[0xE] = &chip8::cpuEXNN;
-        // Chip8Keyboard[0x9E] = &chip8::cpuEX9E;
-        // Chip8Keyboard[0xA1] = &chip8::cpuEXA1;
-
-    // Chip8Table[0xF] = &chip8::cpuFXNN;
-        // Chip8Misc[0x07] = &chip8::cpuFX07;
-        // Chip8Misc[0x0A] = &chip8::cpuFX0A;
-        // Chip8Misc[0x15] = &chip8::cpuFX15;
-        // Chip8Misc[0x18] = &chip8::cpuFX18;
-        // Chip8Misc[0x1E] = &chip8::cpuFX1E;
-        // Chip8Misc[0x29] = &chip8::cpuFX29;
-        // Chip8Misc[0x33] = &chip8::cpuFX33;
-        // Chip8Misc[0x55] = &chip8::cpuFX55;
-        // Chip8Misc[0x65] = &chip8::cpuFX65;
 
     for (int i = 0; i < 0xFF; i++) {
         Chip8System[i] = &chip8::cpuNULL;
     }
 
     for (int i = 0; i < 16; i++) {
-        Chip8Arithmetic[i] = &chip8::cpuNULL;
+       Chip8Arithmetic[i] = &chip8::cpuNULL;
     }
 
     for (int i = 0; i < 0xFF; i++) {
@@ -92,6 +49,52 @@ chip8::chip8(){
     for (int i = 0; i < 0xFF; i++) {
         Chip8Misc[i] = &chip8::cpuNULL;
     }
+
+    Chip8Table[0x0] = &chip8::cpu0NNN;
+        Chip8System[0xE0] = &chip8::cpu00E0;
+        Chip8System[0xEE] = &chip8::cpu00EE;
+
+    Chip8Table[0x1] = &chip8::cpu1NNN;
+    Chip8Table[0x2] = &chip8::cpu2NNN;
+    Chip8Table[0x3] = &chip8::cpu3XNN;
+    Chip8Table[0x4] = &chip8::cpu4XNN;
+    Chip8Table[0x5] = &chip8::cpu5XY0;
+    Chip8Table[0x6] = &chip8::cpu6XNN;
+    Chip8Table[0x7] = &chip8::cpu7XNN;
+
+    Chip8Table[0x8] = &chip8::cpu8XYN;
+        Chip8Arithmetic[0x0] = &chip8::cpu8XY0;
+        Chip8Arithmetic[0x1] = &chip8::cpu8XY1;
+        Chip8Arithmetic[0x2] = &chip8::cpu8XY2;
+        Chip8Arithmetic[0x3] = &chip8::cpu8XY3;
+        Chip8Arithmetic[0x4] = &chip8::cpu8XY4;
+        Chip8Arithmetic[0x5] = &chip8::cpu8XY5;
+        Chip8Arithmetic[0x6] = &chip8::cpu8XY6;
+        Chip8Arithmetic[0x7] = &chip8::cpu8XY7;
+        Chip8Arithmetic[0xE] = &chip8::cpu8XYE;
+
+    Chip8Table[0x9] = &chip8::cpu9XY0;
+    Chip8Table[0xA] = &chip8::cpuANNN;
+    Chip8Table[0xB] = &chip8::cpuBNNN;
+    Chip8Table[0xC] = &chip8::cpuCXNN;
+    Chip8Table[0xD] = &chip8::cpuDXYN;
+
+    Chip8Table[0xE] = &chip8::cpuEXNN;
+        Chip8Keyboard[0x9E] = &chip8::cpuEX9E;
+        Chip8Keyboard[0xA1] = &chip8::cpuEXA1;
+
+    Chip8Table[0xF] = &chip8::cpuFXNN;
+        Chip8Misc[0x07] = &chip8::cpuFX07;
+        Chip8Misc[0x0A] = &chip8::cpuFX0A;
+        Chip8Misc[0x15] = &chip8::cpuFX15;
+        Chip8Misc[0x18] = &chip8::cpuFX18;
+        Chip8Misc[0x1E] = &chip8::cpuFX1E;
+        Chip8Misc[0x29] = &chip8::cpuFX29;
+        Chip8Misc[0x33] = &chip8::cpuFX33;
+        Chip8Misc[0x55] = &chip8::cpuFX55;
+        Chip8Misc[0x65] = &chip8::cpuFX65;
+
+    
     
     
 }
@@ -104,7 +107,7 @@ chip8::~chip8()
 void chip8::run()
 {
     opcode = memory[pc] << 8 | memory[pc + 1];
-    (this->Chip8Table[opcode >> 12]);
+    (this->*Chip8Table[opcode >> 12])();
 
     if (delay_timer > 0) --delay_timer;
     if (sound_timer > 0) --sound_timer;
@@ -636,6 +639,12 @@ bool chip8::loadApplication(const char * filename)
 	return true;
 }
 
+
+// System
+void chip8::cpu0NNN() {
+    (this->*Chip8System[opcode & 0x00FF])();
+}
+
 void chip8::cpu00E0() {
     for (uint16_t i = 0; i < 2048; i++) gfx[i] = 0;
     drawFlag = true;
@@ -649,6 +658,8 @@ void chip8::cpu00EE()
     pc += 2;
 }
 
+
+// Common
 void chip8::cpu1NNN() {
     pc = opcode & 0x0FFF; 
 }
@@ -696,9 +707,14 @@ void chip8::cpu9XY0()
     else pc += 2;
 }
 
-void chip8::cpuANNN() { I = opcode & 0x0FFF; pc += 2; }
+void chip8::cpuANNN() {
+    I = opcode & 0x0FFF; 
+    pc += 2; 
+}
 
-void chip8::cpuBNNN() { pc = V[0] + (opcode & 0x0FFF); }
+void chip8::cpuBNNN() {
+    pc = V[0] + (opcode & 0x0FFF); 
+}
 
 void chip8::cpuCXNN()
 {
@@ -729,3 +745,174 @@ void chip8::cpuDXYN()
     drawFlag = true;
     pc += 2;
 }
+
+
+// Ariphmetical
+void chip8::cpu8XYN() {
+    (this->*Chip8Arithmetic[opcode & 0x000F])();
+}
+
+void chip8::cpu8XY0() {
+    V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
+    pc += 2;
+}
+
+void chip8::cpu8XY1() {
+    V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
+    pc += 2;
+}
+
+void chip8::cpu8XY2() {
+    V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
+    pc += 2;
+}
+
+void chip8::cpu8XY3() {
+    V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
+    pc += 2;
+}
+
+void chip8::cpu8XY4() {
+    if (V[(opcode & 0x00F0) >> 4] > (0xFF - V[(opcode & 0x0F00) >> 8])) {
+                        V[0xF] = 1;
+                    } else {
+                        V[0xF] = 0;
+                    }
+                    V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];  // VX += VY
+                    pc += 2;
+}
+
+void chip8::cpu8XY5() {
+    if (V[(opcode & 0x00F0) >> 4] > V[(opcode & 0x0F00) >> 8]) {
+                        V[0xF] = 0;
+                    } else {
+                        V[0xF] = 1;
+                    }
+                    V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];
+                    pc += 2;
+}
+
+void chip8::cpu8XY6() {
+    V[0xF] = V[(opcode & 0x0F00) >> 8] & 0x1;  // бит ДО сдвига
+                    V[(opcode & 0x0F00) >> 8] >>= 1;
+                    pc += 2;
+}
+
+void chip8::cpu8XY7() {
+    if (V[(opcode & 0x00F0) >> 4] >= V[(opcode & 0x0F00) >> 8]) {
+                        V[0xF] = 1;
+                    } else {
+                        V[0xF] = 0;
+                    }
+                    V[(opcode & 0x0F00) >> 8] = (V[(opcode & 0x00F0) >> 4] - V[(opcode & 0x0F00) >> 8]);
+                    pc += 2;
+}
+
+void chip8::cpu8XYE() {
+    V[0xF] = V[(opcode & 0x0F00) >> 8] >> 7;
+    V[(opcode & 0x0F00) >> 8] <<= 1;
+    pc += 2;
+}
+
+// Keyboard
+void chip8::cpuEXNN() {
+    (this->*Chip8Keyboard[opcode & 0x00FF])();
+}
+
+void chip8::cpuEX9E() {
+    if (key[V[(opcode & 0x0F00) >> 8]] != 0){
+        pc += 4;
+    } else {
+        pc += 2;
+    }
+}
+
+void chip8::cpuEXA1() {
+    if (key[V[(opcode & 0x0F00) >> 8]]) {
+        pc += 4;
+    } else {
+        pc += 2;
+    }
+}
+
+// Misc
+void chip8::cpuFXNN() {
+    (this->*Chip8Misc[opcode & 0x00FF])();
+}
+
+void chip8::cpuFX07() {
+    V[(opcode & 0x0F00) >> 8] = delay_timer;
+    pc += 2;
+}
+
+void chip8::cpuFX0A() {
+    if (!waitingForKey) {
+    // Фаза 1: ищем первую нажатую клавишу
+        for (uint8_t i = 0; i < 16; i++) {
+            if (key[i] != 0) {
+                waitingForKey = true;
+                waitingKeyIndex = i;
+                break;                     // ← выходим из цикла
+            }
+        }
+    } else {
+        // Фаза 2: ждём, пока эта клавиша отпустится
+        if (key[waitingKeyIndex] == 0) {
+            V[(opcode & 0x0F00) >> 8] = waitingKeyIndex;
+            waitingForKey = false;
+            pc += 2;                        // ← двигаем PC только теперь
+        }
+    }
+}
+
+void chip8::cpuFX15() {
+    delay_timer = V[(opcode & 0x0F00) >> 8];
+	pc += 2;
+}
+
+void chip8::cpuFX18() {
+    sound_timer = V[(opcode & 0x0F00) >> 8];
+	pc += 2;
+}
+
+void chip8::cpuFX1E() {
+    uint8_t x = (opcode & 0x0F00) >> 8;
+	if (I + V[x] > 0xFFF)
+        V[0xF] = 1;
+    else
+        V[0xF] = 0;
+    I += V[x];
+    pc += 2;
+}
+
+void chip8::cpuFX29() {
+    I = V[(opcode & 0x0F00) >> 8] * 0x5;
+    pc += 2;
+}
+
+void chip8::cpuFX33() {
+    memory[I]     = (V[(opcode & 0x0F00) >> 8] / 100);
+    memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
+    memory[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
+    pc += 2;
+}
+
+void chip8::cpuFX55() {
+    for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i)
+        memory[I + i] = V[i];	
+
+    // On the original interpreter, when the operation is done, I = I + X + 1.
+    I += ((opcode & 0x0F00) >> 8) + 1;
+    pc += 2;
+}
+
+void chip8::cpuFX65() {
+    for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i)
+		V[i] = memory[I + i];	
+
+	// On the original interpreter, when the operation is done, I = I + X + 1.
+	I += ((opcode & 0x0F00) >> 8) + 1;
+	pc += 2;
+}
+
+
