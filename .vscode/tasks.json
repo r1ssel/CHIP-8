@@ -6,7 +6,7 @@
             "type": "shell",
             "command": "${workspaceFolder}/build/chip8",
             "args": [
-                "../invaders.c8"
+                "../pong2.c8"
             ],
             "dependsOn": "cmake build",
             "options": {

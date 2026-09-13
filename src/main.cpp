@@ -16,8 +16,8 @@ int display_height = SCREEN_HEIGHT * modifier;
 
 void display();
 void reshape_window(GLsizei w, GLsizei h);
-void keyboardUp(uint8_t key, int x, int y);
-void keyboardDown(uint8_t key, int x, int y);
+void keyboardUp(unsigned char key, int x, int y);
+void keyboardDown(unsigned char key, int x, int y);
 
 uint8_t screenData[SCREEN_HEIGHT][SCREEN_WIDTH][3];
 void setupTexture();
@@ -40,7 +40,8 @@ int main(int argc, char** argv) {
     glutCreateWindow("Chip8");
 
     glutDisplayFunc(display);
-    glutIdleFunc(display);
+    // glutIdleFunc(display);
+    
     glutReshapeFunc(reshape_window);
     glutKeyboardFunc(keyboardDown);
     glutKeyboardUpFunc(keyboardUp);
@@ -76,7 +77,15 @@ void updateQuads(const chip8& c8)
 
 void display()
 {
-    myChip.emulateCycle();
+    static int lastTime = 0;
+    int currentTime = glutGet(GLUT_ELAPSED_TIME);
+
+    if (currentTime - lastTime >= 16) {   // ~60 FPS
+        for (int i = 0; i < 10; i++) {    // 10 инструкций за кадр
+            myChip.emulateCycle();
+        }
+        lastTime = currentTime;
+    }
 
     if(myChip.drawFlag) {
         glClear(GL_COLOR_BUFFER_BIT);
@@ -86,6 +95,8 @@ void display()
 
         myChip.drawFlag = false;
     }
+    
+    glutPostRedisplay();
 }
 
 void reshape_window(GLsizei w, GLsizei h)

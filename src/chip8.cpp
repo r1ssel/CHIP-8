@@ -77,7 +77,7 @@ void chip8::init()
 void chip8::emulateCycle()
 {
     opcode = memory[pc] << 8 | memory[pc +1];
-    printf("pc=0x%03X opcode=0x%04X\n", pc, opcode);
+    // printf("pc=0x%03X opcode=0x%04X\n", pc, opcode);
     if (opcode == 0xF090) exit(0);
     // printf("opcode: %X\r\n", opcode);
 
@@ -230,8 +230,8 @@ void chip8::emulateCycle()
                 case 0x0006:
                 {
                     // in example order is different
+                    V[0xF] = V[(opcode & 0x0F00) >> 8] & 0x1;  // бит ДО сдвига
                     V[(opcode & 0x0F00) >> 8] >>= 1;
-                    V[0xF] = V[(opcode & 0x0F00) >> 8] & 0x1;
                     pc += 2;
                     break;
                 }
@@ -290,7 +290,7 @@ void chip8::emulateCycle()
 
         case 0xC000:
         {
-            V[(opcode & 0x0F00) >> 8] = (rand() % 0xFF) & (opcode & 0x00FF);
+            V[(opcode & 0x0F00) >> 8] = (rand() % 0x100) & (opcode & 0x00FF);
             pc += 2;
             break;
         }
@@ -318,15 +318,15 @@ void chip8::emulateCycle()
             for (uint16_t yline = 0; yline < height; yline++) {
                 pixel = memory[I + yline];
                 for (uint16_t xline = 0; xline < 8; xline++) {
-                    if ((pixel & (0x80 >> xline) != 0)) {
-                        if (gfx[(x + xline + ((y + yline) * 64))] == 1) {
-                            V[0xF] = 1;
-                        }
-                        gfx[x + xline + ((y+ yline) * 64)] ^= 1;
+                    if ((pixel & (0x80 >> xline)) != 0) {
+                        uint16_t px = (x + xline) % 64;
+                        uint16_t py = (y + yline) % 32;
+                        uint16_t idx = px + py * 64;
+                        if (gfx[idx] == 1) V[0xF] = 1;
+                        gfx[idx] ^= 1;
                     }
                 }
             }
-
             drawFlag = true;
             pc += 2;
             break;
@@ -409,7 +409,12 @@ void chip8::emulateCycle()
 
                 case 0x001E:
                 {
-                    I += V[(opcode & 0x0F00) >> 8];
+                    uint8_t x = (opcode & 0x0F00) >> 8;
+                    if (I + V[x] > 0xFFF)
+                        V[0xF] = 1;
+                    else
+                        V[0xF] = 0;
+                    I += V[x];
                     pc += 2;
                     break;
                 }
@@ -475,7 +480,7 @@ void chip8::emulateCycle()
 
     if (sound_timer > 0) {
         if (sound_timer > 0) {
-            printf("BEEP!");
+            // printf("BEEP!");
         }
         --sound_timer;
     }
