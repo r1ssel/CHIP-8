@@ -53,6 +53,8 @@ chip8::chip8(){
     Chip8Table[0x0] = &chip8::cpu0NNN;
         Chip8System[0xE0] = &chip8::cpu00E0;
         Chip8System[0xEE] = &chip8::cpu00EE;
+        Chip8System[0xFE] = &chip8::cpu00FE;
+        Chip8System[0xFF] = &chip8::cpu00FF;
 
     Chip8Table[0x1] = &chip8::cpu1NNN;
     Chip8Table[0x2] = &chip8::cpu2NNN;
@@ -75,7 +77,8 @@ chip8::chip8(){
 
     Chip8Table[0x9] = &chip8::cpu9XY0;
     Chip8Table[0xA] = &chip8::cpuANNN;
-    Chip8Table[0xB] = &chip8::cpuBNNN;
+    Chip8Table[0xB] = &chip8::cpuBXNN; // BNNN <-> BXNN
+
     Chip8Table[0xC] = &chip8::cpuCXNN;
     Chip8Table[0xD] = &chip8::cpuDXYN;
 
@@ -658,6 +661,13 @@ void chip8::cpu00EE()
     pc += 2;
 }
 
+void chip8::cpu00FE() {
+    pc += 2;
+}
+
+void chip8::cpu00FF() {
+    pc += 2;
+}
 
 // Common
 void chip8::cpu1NNN() {
@@ -714,6 +724,10 @@ void chip8::cpuANNN() {
 
 void chip8::cpuBNNN() {
     pc = V[0] + (opcode & 0x0FFF); 
+}
+
+void chip8::cpuBXNN() {
+    pc = V[(opcode & 0x0F00) >> 8] + (opcode & 0x0FFF);
 }
 
 void chip8::cpuCXNN()

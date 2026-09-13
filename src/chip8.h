@@ -63,6 +63,7 @@ class chip8 {
         void (chip8::*Chip8System    [256])();    // по 0x00FF для 0x0
         void (chip8::*Chip8Keyboard  [256])();    // по 0x00FF для 0xE
         void (chip8::*Chip8Misc      [256])();    // по 0x00FF для 0xF
+        void (chip8::*Chip8Sprite    [16 ])();
 
         void cpuNULL();
 
@@ -77,13 +78,20 @@ class chip8 {
         void cpu9XY0();   // 0x9: skip if VX != VY
         void cpuANNN();   // 0xA: I = NNN
         void cpuBNNN();   // 0xB: jump to NNN + V0
+        void cpuBXNN();   // 0xB: jump to XNN + VX
         void cpuCXNN();   // 0xC: VX = rand() & NN
+
         void cpuDXYN();   // 0xD: draw sprite
+        void cpuDXY0();   // 0xDXY0 draws 16x16 sprite
 
         // Chip8System
         void cpu0NNN();  
         void cpu00E0();
         void cpu00EE();
+        void cpu00FD(); //! exit programm
+        void cpu00FE(); //! switch to lores mode
+        void cpu00FF(); //! switch to hires mode
+
         
         // Chip8Arithmetic
         void cpu8XYN(); 
@@ -110,7 +118,10 @@ class chip8 {
         void cpuFX18();
         void cpuFX1E();
         void cpuFX29();
+        void cpuFX30();
         void cpuFX33();
         void cpuFX55();
         void cpuFX65();
+        void cpuFX75();
+        void cpuFX85();
 };
