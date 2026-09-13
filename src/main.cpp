@@ -8,7 +8,7 @@
 #define SCREEN_HEIGHT 32
 
 chip8 myChip;
-int modifier = 10;
+int modifier = 15;
 
 int display_width = SCREEN_WIDTH * modifier;
 int display_height = SCREEN_HEIGHT * modifier;
@@ -82,7 +82,8 @@ void display()
 
     if (currentTime - lastTime >= 25) {   // ~60 FPS
         for (int i = 0; i < 10; i++) {    // 10 инструкций за кадр
-            myChip.emulateCycle();
+            // myChip.emulateCycle();
+            myChip.run();
         }
         lastTime = currentTime;
     }
