@@ -22,7 +22,7 @@ target_link_libraries(chip8 PRIVATE
     ${GLU_LIBRARY})
 
 # --- Тесты (опционально, если GTest найден) ---
-find_package(GTest QUIET)
+find_package(GTest REQUIRED)
 if(GTest_FOUND)
     enable_testing()
     add_executable(chip8_tests tests/chip8_test.cpp)
