@@ -33,9 +33,9 @@ void chip8::cpuNULL()
 }
 
 chip8::chip8(){
-    Chip8Table[0x0] = &chip8::cpu0NNN;
-        // Chip8System[0xE0] = &chip8::cpu00E0;
-        // Chip8System[0xEE] = &chip8::cpu00EE;
+    // Chip8Table[0x0] = &chip8::cpu0NNN;
+    // Chip8System[0xE0] = &chip8::cpu00E0;
+    // Chip8System[0xEE] = &chip8::cpu00EE;
 
     Chip8Table[0x1] = &chip8::cpu1NNN;
     Chip8Table[0x2] = &chip8::cpu2NNN;
@@ -45,7 +45,7 @@ chip8::chip8(){
     Chip8Table[0x6] = &chip8::cpu6XNN;
     Chip8Table[0x7] = &chip8::cpu7XNN;
 
-    Chip8Table[0x8] = &chip8::cpu8XYN;
+    // Chip8Table[0x8] = &chip8::cpu8XYN;
         // Chip8Arithmetic[0x0] = &chip8::cpu8XY0;
         // Chip8Arithmetic[0x1] = &chip8::cpu8XY1;
         // Chip8Arithmetic[0x2] = &chip8::cpu8XY2;
@@ -62,11 +62,11 @@ chip8::chip8(){
     Chip8Table[0xC] = &chip8::cpuCXNN;
     Chip8Table[0xD] = &chip8::cpuDXYN;
 
-    Chip8Table[0xE] = &chip8::cpuEXNN;
+    // Chip8Table[0xE] = &chip8::cpuEXNN;
         // Chip8Keyboard[0x9E] = &chip8::cpuEX9E;
         // Chip8Keyboard[0xA1] = &chip8::cpuEXA1;
 
-    Chip8Table[0xF] = &chip8::cpuFXNN;
+    // Chip8Table[0xF] = &chip8::cpuFXNN;
         // Chip8Misc[0x07] = &chip8::cpuFX07;
         // Chip8Misc[0x0A] = &chip8::cpuFX0A;
         // Chip8Misc[0x15] = &chip8::cpuFX15;
@@ -94,12 +94,6 @@ chip8::chip8(){
     }
     
     
-}
-
-
-chip8::chip8()
-{
-	// empty
 }
 
 chip8::~chip8()
