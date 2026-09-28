@@ -10,6 +10,7 @@ class chip8 {
 
         void emulateCycle();
         void run();
+        void updateTimers();
 
         void debugRender();
         bool loadApplication(const char * filename);
@@ -39,7 +40,7 @@ class chip8 {
 
         // --- Утилита для тестов: выполнить одну инструкцию ---
         // (можно вызывать emulateCycle напрямую, но так понятнее)
-        void runInstruction() { emulateCycle(); }
+        void runInstruction() { run(); }
 
     private:
         uint16_t pc;
@@ -50,6 +51,7 @@ class chip8 {
         uint8_t V[16];
         uint16_t stack[16];
         uint8_t memory[4096];
+        uint8_t flags[16];
 
         uint8_t delay_timer;
         uint8_t sound_timer;
@@ -81,13 +83,15 @@ class chip8 {
         void cpuBXNN();   // 0xB: jump to XNN + VX
         void cpuCXNN();   // 0xC: VX = rand() & NN
 
-        void cpuDXYN();   // 0xD: draw sprite
-        void cpuDXY0();   // 0xDXY0 draws 16x16 sprite
+        void cpuDXYN();   // 0xD: draw sprites
 
         // Chip8System
-        void cpu0NNN();  
+        void cpu0NNN();
+        void cpu00CN();  
         void cpu00E0();
         void cpu00EE();
+        void cpu00FB();
+        void cpu00FC();
         void cpu00FD(); //! exit programm
         void cpu00FE(); //! switch to lores mode
         void cpu00FF(); //! switch to hires mode

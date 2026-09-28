@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 
-
+uint64_t cycles_count = 0;
 
 unsigned char chip8_fontset[80] =
 { 
@@ -34,7 +34,7 @@ void chip8::cpuNULL()
 
 chip8::chip8(){
 
-    for (int i = 0; i < 0xFF; i++) {
+    for (int i = 0; i < 256; i++) {
         Chip8System[i] = &chip8::cpuNULL;
     }
 
@@ -42,17 +42,28 @@ chip8::chip8(){
        Chip8Arithmetic[i] = &chip8::cpuNULL;
     }
 
-    for (int i = 0; i < 0xFF; i++) {
+    for (int i = 0; i < 256; i++) {
         Chip8Keyboard[i] = &chip8::cpuNULL;
     }
 
-    for (int i = 0; i < 0xFF; i++) {
+    for (int i = 0; i < 256; i++) {
         Chip8Misc[i] = &chip8::cpuNULL;
     }
 
+    for (int i = 0; i < 16; i++) {
+        Chip8Sprite[i] = &chip8::cpuNULL;
+    }
+
+    for (int i = 0; i < 16; i++) {
+        Chip8System[0xC0 + i] = &chip8::cpu00CN;
+    }
+
     Chip8Table[0x0] = &chip8::cpu0NNN;
+        // Chip8System[0xC0] = &chip8::cpu00CN;
         Chip8System[0xE0] = &chip8::cpu00E0;
         Chip8System[0xEE] = &chip8::cpu00EE;
+        Chip8System[0xFB] = &chip8::cpu00FB;
+        Chip8System[0xFC] = &chip8::cpu00FC;
         Chip8System[0xFE] = &chip8::cpu00FE;
         Chip8System[0xFF] = &chip8::cpu00FF;
 
@@ -80,6 +91,8 @@ chip8::chip8(){
     Chip8Table[0xB] = &chip8::cpuBXNN; // BNNN <-> BXNN
 
     Chip8Table[0xC] = &chip8::cpuCXNN;
+
+
     Chip8Table[0xD] = &chip8::cpuDXYN;
 
     Chip8Table[0xE] = &chip8::cpuEXNN;
@@ -93,13 +106,12 @@ chip8::chip8(){
         Chip8Misc[0x18] = &chip8::cpuFX18;
         Chip8Misc[0x1E] = &chip8::cpuFX1E;
         Chip8Misc[0x29] = &chip8::cpuFX29;
+        Chip8Misc[0x30] = &chip8::cpuFX30;
         Chip8Misc[0x33] = &chip8::cpuFX33;
         Chip8Misc[0x55] = &chip8::cpuFX55;
         Chip8Misc[0x65] = &chip8::cpuFX65;
-
-    
-    
-    
+        Chip8Misc[0x75] = &chip8::cpuFX75;
+        Chip8Misc[0x85] = &chip8::cpuFX85;
 }
 
 chip8::~chip8()
@@ -110,10 +122,14 @@ chip8::~chip8()
 void chip8::run()
 {
     opcode = memory[pc] << 8 | memory[pc + 1];
+    if (opcode < 0x200) {
+        // printf("opcode=0x%04X\r\n", opcode);
+    }
     (this->*Chip8Table[opcode >> 12])();
-
-    if (delay_timer > 0) --delay_timer;
-    if (sound_timer > 0) --sound_timer;
+    // if (cycles_count > 100) exit(0);
+    
+    
+    cycles_count++;
 }
 
 void chip8::init()
@@ -577,6 +593,11 @@ void chip8::emulateCycle()
 
 }
 
+void chip8::updateTimers() {
+    if (delay_timer > 0) --delay_timer;
+    if (sound_timer > 0) --sound_timer;
+}
+
 bool chip8::loadApplication(const char * filename)
 {
     init();
@@ -645,7 +666,22 @@ bool chip8::loadApplication(const char * filename)
 
 // System
 void chip8::cpu0NNN() {
+    // printf("cpu0NNN: opcode=0x%04X, idx=0x%02X\n", opcode, opcode & 0x00FF);
+    
     (this->*Chip8System[opcode & 0x00FF])();
+}
+
+void chip8::cpu00CN() {
+    printf("00CN: n=%d\n", opcode & 0x000F); 
+    uint8_t n = opcode & 0x000F;
+    for (int y = 31; y >= 0; y--) {
+        for (int x = 0; x < 64; x++) {
+            if (y >= n) gfx[y*64 + x] = gfx[(y-n)*64 + x];
+            else gfx[y*64 + x] = 0;
+        }
+    }
+    drawFlag = true;
+    pc += 2;
 }
 
 void chip8::cpu00E0() {
@@ -656,8 +692,41 @@ void chip8::cpu00E0() {
 
 void chip8::cpu00EE()
 {
+    printf("00EE: sp=%d, pc=0x%03X\n", sp, pc);
+    if (sp == 0) {
+        printf("00EE: stack underflow! Stopping.\n");
+        exit(1);
+    }
     --sp;
     pc = stack[sp];
+    pc += 2;
+}
+
+void chip8::cpu00FB() {
+    // Сдвигаем каждую строку вправо на 4 пикселя
+    for (int y = 0; y < 32; y++) {
+        for (int x = 63; x >= 4; x--) {
+            gfx[y * 64 + x] = gfx[y * 64 + (x - 4)];
+        }
+        // Заполняем первые 4 пикселя нулями
+        for (int x = 0; x < 4; x++) {
+            gfx[y * 64 + x] = 0;
+        }
+    }
+    drawFlag = true;
+    pc += 2;
+}
+
+void chip8::cpu00FC() {
+    for (int y = 0; y < 32; y++) {
+        for (int x = 0; x < 60; x++) {
+            gfx[y * 64 + x] = gfx[y * 64 + (x + 4)];
+        }
+        for (int x = 60; x < 64; x++) {
+            gfx[y * 64 + x] = 0;
+        }
+    }
+    drawFlag = true;
     pc += 2;
 }
 
@@ -741,21 +810,44 @@ void chip8::cpuDXYN()
     uint16_t x = V[(opcode & 0x0F00) >> 8];
     uint16_t y = V[(opcode & 0x00F0) >> 4];
     uint16_t height = opcode & 0x000F;
-    uint16_t pixel = 0;
 
-    V[0xF] = 0;
-    for (uint16_t yline = 0; yline < height; yline++) {
-        pixel = memory[I + yline];
-        for (uint16_t xline = 0; xline < 8; xline++) {
-            if ((pixel & (0x80 >> xline)) != 0) {
-                uint16_t px = (x + xline) % 64;
-                uint16_t py = (y + yline) % 32;
-                uint16_t idx = px + py * 64;
-                if (gfx[idx] == 1) V[0xF] = 1;
-                gfx[idx] ^= 1;
+        // printf("DXYN: x=%d y=%d h=%d I=0x%03X\n",
+        //    V[(opcode & 0x0F00) >> 8],
+        //    V[(opcode & 0x00F0) >> 4],
+        //    opcode & 0x000F, I); 
+
+    if (height == 0) {
+        // 16x16 спрайт
+        V[0xF] = 0;
+        for (uint16_t yline = 0; yline < 16; yline++) {
+            uint16_t row = (memory[I + yline * 2] << 8) | memory[I + yline * 2 + 1];
+            for (uint16_t xline = 0; xline < 16; xline++) {
+                if ((row & (0x8000 >> xline)) != 0) {
+                    uint16_t px = (x + xline) % 64;
+                    uint16_t py = (y + yline) % 32;
+                    uint16_t idx = px + py * 64;
+                    if (gfx[idx] == 1) V[0xF] = 1;
+                    gfx[idx] ^= 1;
+                }
+            }
+        }
+    } else {
+        // 8xN спрайт
+        V[0xF] = 0;
+        for (uint16_t yline = 0; yline < height; yline++) {
+            uint8_t row = memory[I + yline];
+            for (uint16_t xline = 0; xline < 8; xline++) {
+                if ((row & (0x80 >> xline)) != 0) {
+                    uint16_t px = (x + xline) % 64;
+                    uint16_t py = (y + yline) % 32;
+                    uint16_t idx = px + py * 64;
+                    if (gfx[idx] == 1) V[0xF] = 1;
+                    gfx[idx] ^= 1;
+                }
             }
         }
     }
+
     drawFlag = true;
     pc += 2;
 }
@@ -842,10 +934,10 @@ void chip8::cpuEX9E() {
 }
 
 void chip8::cpuEXA1() {
-    if (key[V[(opcode & 0x0F00) >> 8]]) {
+    if (key[V[(opcode & 0x0F00) >> 8]] == 0) {   // ← == 0, не !
         pc += 4;
     } else {
-        pc += 2;
+        pc += 2;      
     }
 }
 
@@ -904,6 +996,11 @@ void chip8::cpuFX29() {
     pc += 2;
 }
 
+void chip8::cpuFX30() {
+    I = V[(opcode & 0x0F00) >> 8] * 0x10;
+    pc += 2;
+}
+
 void chip8::cpuFX33() {
     memory[I]     = (V[(opcode & 0x0F00) >> 8] / 100);
     memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
@@ -916,7 +1013,7 @@ void chip8::cpuFX55() {
         memory[I + i] = V[i];	
 
     // On the original interpreter, when the operation is done, I = I + X + 1.
-    I += ((opcode & 0x0F00) >> 8) + 1;
+    // I += ((opcode & 0x0F00) >> 8) + 1;
     pc += 2;
 }
 
@@ -925,8 +1022,20 @@ void chip8::cpuFX65() {
 		V[i] = memory[I + i];	
 
 	// On the original interpreter, when the operation is done, I = I + X + 1.
-	I += ((opcode & 0x0F00) >> 8) + 1;
+	// I += ((opcode & 0x0F00) >> 8) + 1;
 	pc += 2;
 }
 
+void chip8::cpuFX75() {
+    for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i) {
+        flags[i] = V[i]; // flags — отдельный массив, не входящий в memory[]
+    }
+    pc += 2;
+}
 
+void chip8::cpuFX85() {
+    for (int i = 0; i <= ((opcode & 0x0F00) >> 8); ++i) {
+        V[i] = flags[i];
+    }
+    pc += 2;
+}

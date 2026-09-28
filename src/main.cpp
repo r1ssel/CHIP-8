@@ -85,11 +85,16 @@ void display()
             // myChip.emulateCycle();
             myChip.run();
         }
+        myChip.updateTimers();
         lastTime = currentTime;
     }
 
+
     if(myChip.drawFlag) {
         glClear(GL_COLOR_BUFFER_BIT);
+        int sum = 0;
+        for (int i = 0; i < 64 * 32; i++) sum += myChip.gfx[i];
+        
         updateQuads(myChip);
 
         glutSwapBuffers();
