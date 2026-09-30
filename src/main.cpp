@@ -14,7 +14,7 @@ const int SCALE   = 15;
 const int MENU_W = 640;
 const int MENU_H = 480;
 
-
+const std::string roms_folder = "roms";
 
 // ---------------- Кнопка ----------------
 struct Button {
@@ -78,10 +78,14 @@ bool initSDL(App& app) {
                     CHIP8_W, CHIP8_H);
     if (!app.screen) return false;
 
-    if (std::filesystem::exists("roms") && std::filesystem::is_directory("roms")) {
-        for (auto& entry : std::filesystem::directory_iterator("roms")) {
-            if (entry.path().extension() == ".ch8" || entry.path().extension() == ".c8")
-                app.roms.push_back("roms/" + entry.path().filename().string());
+    std::string rom = roms_folder; // копируем чтобы добавить слеш, потому что имя папки const
+    rom.append("/");
+
+    if (std::filesystem::exists(rom) && std::filesystem::is_directory(rom)) {
+        for (auto& entry : std::filesystem::directory_iterator(rom)) {
+            if (entry.path().extension() == ".ch8" || entry.path().extension() == ".c8"){
+                app.roms.push_back(rom + entry.path().filename().string());
+            }
         }
     } else {
         std::cerr << "Warning: folder 'roms' not found\n";
@@ -147,7 +151,7 @@ void createMenu(App& app, chip8& c8) {
     for (const auto& rom : app.roms) {
         Button b;
         b.rect = { X, y, BTN_W, BTN_H };
-        b.text = rom;
+        b.text = rom.substr(roms_folder.size() + 1, (rom.size() + 1) - roms_folder.size());
         b.onClick = [&app, &c8, rom] { startGame(app, c8, rom); };
         app.menuButtons.push_back(b);
         y += BTN_H + GAP;
