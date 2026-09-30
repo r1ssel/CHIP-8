@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # --- Зависимости ---
 find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
-find_library(GLU_LIBRARY NAMES GLU PATHS /usr/lib64 /usr/lib REQUIRED)
+find_package(SDL2 REQUIRED)
+find_package(SDL2_ttf REQUIRED)
 
 # --- Ядро эмулятора ---
 add_library(chip8_core src/chip8.cpp)
@@ -17,8 +17,9 @@ target_include_directories(chip8_core PUBLIC src)
 add_executable(chip8 src/main.cpp)
 target_link_libraries(chip8 PRIVATE
     chip8_core
+    SDL2::SDL2
+    SDL2_ttf::SDL2_ttf
     OpenGL::GL
-    GLUT::GLUT
     ${GLU_LIBRARY})
 
 # --- Тесты (опционально, если GTest найден) ---

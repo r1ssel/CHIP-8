@@ -6,11 +6,10 @@
             "type": "shell",
             "command": "${workspaceFolder}/build/chip8",
             "args": [
-                "../pong2.c8"
             ],
             "dependsOn": "cmake build",
             "options": {
-                "cwd": "${workspaceFolder}/build"
+                "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [],
             "presentation": {

@@ -607,7 +607,7 @@ bool chip8::loadApplication(const char * filename)
     FILE * pFile = fopen(filename, "rb");
     if (pFile == NULL)
     {
-        fputs ("File error", stderr);
+        fputs ("File error: ", stderr);
         return false;
     }
 
@@ -645,7 +645,7 @@ bool chip8::loadApplication(const char * filename)
 
             for (int n = 0; n < inst; ++n) {
                 int i = 512 + n * 2;
-                printf(" [%d] = 0x%04X ", n, (memory[i] << 8) | memory[i + 1]);
+                printf(" [%02d] = 0x%04X |", n, (memory[i] << 8) | memory[i + 1]);
                 if ((n + 1) % 8 == 0) printf("\r\n");
             }
             printf("\r\n");
