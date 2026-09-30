@@ -600,7 +600,7 @@ void chip8::updateTimers() {
 
 bool chip8::loadApplication(const char * filename)
 {
-    init();
+    
 
     printf("Loading: %s\n", filename);
 
@@ -633,7 +633,7 @@ bool chip8::loadApplication(const char * filename)
 
     int inst = 32;
 
-    
+    init();
 
     // Copy buffer to Chip8 memory
 	if((4096-512) > lSize)

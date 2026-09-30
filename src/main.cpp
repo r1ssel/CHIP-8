@@ -135,6 +135,7 @@ void startGame(App& app, chip8& c8, const std::string& rom) {
         return;
     }
     // c8.reset(); // если у chip8 есть метод reset — вызовите; иначе уберите
+    
     app.state = State::Game;
     SDL_SetWindowSize(app.win, CHIP8_W * SCALE, CHIP8_H * SCALE);
 }
@@ -160,23 +161,26 @@ void createMenu(App& app, chip8& c8) {
 
 // ---------------- Обработка событий ----------------
 void updateKeys(chip8& c8, const SDL_Event& e, bool pressed) {
-    switch (e.key.keysym.sym) {
-        case SDLK_1: c8.key[0x1] = pressed; break;
-        case SDLK_2: c8.key[0x2] = pressed; break;
-        case SDLK_3: c8.key[0x3] = pressed; break;
-        case SDLK_4: c8.key[0xC] = pressed; break;
-        case SDLK_q: c8.key[0x4] = pressed; break;
-        case SDLK_w: c8.key[0x5] = pressed; break;
-        case SDLK_e: c8.key[0x6] = pressed; break;
-        case SDLK_r: c8.key[0xD] = pressed; break;
-        case SDLK_a: c8.key[0x7] = pressed; break;
-        case SDLK_s: c8.key[0x8] = pressed; break;
-        case SDLK_d: c8.key[0x9] = pressed; break;
-        case SDLK_f: c8.key[0xE] = pressed; break;
-        case SDLK_z: c8.key[0xA] = pressed; break;
-        case SDLK_x: c8.key[0x0] = pressed; break;
-        case SDLK_c: c8.key[0xB] = pressed; break;
-        case SDLK_v: c8.key[0xF] = pressed; break;
+    switch (e.key.keysym.scancode) {
+        case SDL_SCANCODE_1: c8.key[0x1] = pressed; break;
+        case SDL_SCANCODE_2: c8.key[0x2] = pressed; break;
+        case SDL_SCANCODE_3: c8.key[0x3] = pressed; break;
+        case SDL_SCANCODE_4: c8.key[0xC] = pressed; break;
+
+        case SDL_SCANCODE_Q: c8.key[0x4] = pressed; break;
+        case SDL_SCANCODE_W: c8.key[0x5] = pressed; break;
+        case SDL_SCANCODE_E: c8.key[0x6] = pressed; break;
+        case SDL_SCANCODE_R: c8.key[0xD] = pressed; break;
+
+        case SDL_SCANCODE_A: c8.key[0x7] = pressed; break;
+        case SDL_SCANCODE_S: c8.key[0x8] = pressed; break;
+        case SDL_SCANCODE_D: c8.key[0x9] = pressed; break;
+        case SDL_SCANCODE_F: c8.key[0xE] = pressed; break;
+
+        case SDL_SCANCODE_Z: c8.key[0xA] = pressed; break;
+        case SDL_SCANCODE_X: c8.key[0x0] = pressed; break;
+        case SDL_SCANCODE_C: c8.key[0xB] = pressed; break;
+        case SDL_SCANCODE_V: c8.key[0xF] = pressed; break;
     }
 }
 
@@ -213,8 +217,7 @@ void handleGameEvent(App& app, chip8& c8, const SDL_Event& e) {
     }
 
     if (e.type == SDL_KEYDOWN) {
-        if (e.key.keysym.sym == SDLK_ESCAPE) {
-            // Возврат в меню
+        if (e.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
             app.state = State::Menu;
             SDL_SetWindowSize(app.win, MENU_W, MENU_H);
             return;
