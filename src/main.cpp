@@ -146,7 +146,7 @@ void createMenu(App& app, chip8& c8) {
     const int BTN_W = 260;
     const int BTN_H = 40;
     const int GAP   = 10;
-    const int X     = (MENU_W - BTN_W) / 2;
+    const int X     = 20;
     int y = 80;
 
     for (const auto& rom : app.roms) {
@@ -258,19 +258,13 @@ void renderMenu(App& app) {
 
     if (app.font) {
         drawText(app.ren, app.font, "CHIP-8",
-                 MENU_W / 2, 20,
+                 20, 20,
                  SDL_Color{ 255, 255, 255, 255 },
                  true, MENU_W);
     }
 
     for (const auto& b : app.menuButtons)
         drawButton(app.ren, app.font, b);
-
-    if (app.font) {
-        drawText(app.ren, app.font, "ESC — выход из игры",
-                 10, MENU_H - 30,
-                 SDL_Color{ 150, 150, 150, 255 });
-    }
 
     SDL_RenderPresent(app.ren);
 }
@@ -294,7 +288,7 @@ void renderGame(App& app, chip8& c8) {
 
 // ---------------- Главный цикл ----------------
 void run(App& app, chip8& c8) {
-    const int CYCLES_PER_FRAME = 10;
+    const int CYCLES_PER_FRAME = 5;
     Uint32 lastTimer = SDL_GetTicks();
 
     while (app.running) {
