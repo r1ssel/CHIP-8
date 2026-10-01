@@ -13,6 +13,9 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y freeglut3-dev mesa-common-dev libglu1-mesa-dev libgtest-dev
+        
+    - name: Install fonts
+      run: sudo apt-get install -y fonts-dejavu fonts-liberation
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release

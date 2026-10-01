@@ -7,6 +7,10 @@
 #include <filesystem>
 #include "chip8.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 const int CHIP8_W = 64;
 const int CHIP8_H = 32;
 const int SCALE   = 15;
@@ -15,6 +19,8 @@ const int MENU_W = 640;
 const int MENU_H = 480;
 
 const std::string roms_folder = "roms";
+
+const int CYCLES_PER_FRAME = 5;
 
 // ---------------- Кнопка ----------------
 struct Button {
@@ -94,14 +100,106 @@ bool initSDL(App& app) {
     return true;
 }
 
-bool initFont(App& app) {
-    const char* fontPath = "/usr/share/fonts/google-noto-vf/NotoSansMono[wght].ttf";
-    app.font = TTF_OpenFont(fontPath, 20);
-    if (!app.font) {
-        std::cerr << "TTF_OpenFont: " << TTF_GetError() << "\n";
-        return false;
+// Список путей-кандидатов. Первый, который откроется, станет основным.
+static const std::vector<std::string> FONT_CANDIDATES = {
+    // Ваш любимый (если есть)
+    "/usr/share/fonts/google-noto-vf/NotoSansMono[wght].ttf",
+
+    // Debian/Ubuntu
+    "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf",
+
+    // Fedora
+    "/usr/share/fonts/dejavu-sans-mono-fonts/DejaVuSansMono.ttf",
+    "/usr/share/fonts/dejavu-sans-fonts/DejaVuSans.ttf",
+    "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+    "/usr/share/fonts/liberation-sans-fonts/LiberationSans-Regular.ttf",
+
+    // Arch
+    "/usr/share/fonts/TTF/DejaVuSansMono.ttf",
+    "/usr/share/fonts/TTF/DejaVuSans.ttf",
+
+    // macOS (на случай, если будете собирать под Mac)
+    "/System/Library/Fonts/Menlo.ttc",
+    "/Library/Fonts/Arial.ttf",
+
+    // Windows (на случай MSYS2 / MinGW)
+    "C:/Windows/Fonts/consola.ttf",
+    "C:/Windows/Fonts/segoeui.ttf",
+    "C:/Windows/Fonts/arial.ttf",
+};
+
+// Попытка найти шрифт через fontconfig (только Linux/macOS с fc-match)
+static std::string findViaFontconfig() {
+    // Спрашиваем у fc-match путь к шрифту по имени семейства.
+    // Берём "sans" — универсальное имя, которое всегда существует.
+    FILE* pipe = popen("fc-match -f '%{file}' sans 2>/dev/null", "r");
+    if (!pipe) return "";
+
+    char buffer[1024];
+    std::string result;
+    if (fgets(buffer, sizeof(buffer), pipe)) {
+        result = buffer;
     }
-    return true;
+    pclose(pipe);
+
+    // fc-match иногда возвращает несколько путей через запятую — берём первый
+    auto comma = result.find(',');
+    if (comma != std::string::npos) result = result.substr(0, comma);
+
+    return result;
+}
+
+bool initFont(App& app, int size = 20) {
+    // 1. Перебираем явные пути
+    for (const auto& path : FONT_CANDIDATES) {
+        if (!std::filesystem::exists(path)) continue;
+
+        app.font = TTF_OpenFont(path.c_str(), size);
+        if (app.font) {
+            std::cout << "Font loaded: " << path << "\n";
+            return true;
+        }
+    }
+
+    // 2. Пробуем fontconfig
+    std::string fcPath = findViaFontconfig();
+    if (!fcPath.empty() && std::filesystem::exists(fcPath)) {
+        app.font = TTF_OpenFont(fcPath.c_str(), size);
+        if (app.font) {
+            std::cout << "Font loaded via fontconfig: " << fcPath << "\n";
+            return true;
+        }
+    }
+
+    // 3. Сканируем стандартные папки на любой .ttf
+    const std::vector<std::string> searchDirs = {
+        "/usr/share/fonts",
+        "/usr/local/share/fonts",
+        "/Library/Fonts",
+        "C:/Windows/Fonts",
+    };
+
+    for (const auto& dir : searchDirs) {
+        if (!std::filesystem::exists(dir)) continue;
+
+        for (auto& entry : std::filesystem::recursive_directory_iterator(
+                              dir, std::filesystem::directory_options::skip_permission_denied)) {
+            auto ext = entry.path().extension().string();
+            if (ext != ".ttf" && ext != ".otf" && ext != ".ttc") continue;
+
+            app.font = TTF_OpenFont(entry.path().string().c_str(), size);
+            if (app.font) {
+                std::cout << "Font loaded (fallback scan): " << entry.path() << "\n";
+                return true;
+            }
+        }
+    }
+
+    // 4. Всё провалилось — работаем без текста, но не падаем
+    std::cerr << "Warning: no usable font found. Text will not be rendered.\n";
+    return false;   // или true, если не хотите падать на этом
 }
 
 // ---------------- Текст ----------------
@@ -287,12 +385,10 @@ void renderGame(App& app, chip8& c8) {
 }
 
 // ---------------- Главный цикл ----------------
-void run(App& app, chip8& c8) {
-    const int CYCLES_PER_FRAME = 5;
+void main_loop(App& app, chip8& c8){
+    
     Uint32 lastTimer = SDL_GetTicks();
-
-    while (app.running) {
-        SDL_Event e;
+    SDL_Event e;
         while (SDL_PollEvent(&e)) {
             if (app.state == State::Menu)
                 handleMenuEvent(app, e);
@@ -319,8 +415,19 @@ void run(App& app, chip8& c8) {
                 c8.drawFlag = false;
             }
         }
-    }
 }
+
+void run(App& app, chip8& c8) {
+    
+
+    #ifdef __EMSCRIPTEN__
+        emscripten_set_main_loop([]() {main_loop(app, c8)}, 0, 1);
+    #else
+        while (app.running) { main_loop(app, c8); }
+    #endif
+}
+
+
 
 // ---------------- Завершение ----------------
 void shutdown(App& app) {
@@ -337,10 +444,12 @@ int main(int argc, char* argv[]) {
     chip8 c8;
     App app;
 
-    if (!initSDL(app) || !initFont(app)) {
+    if (!initSDL(app)) {
         shutdown(app);
         return 1;
     }
+
+    initFont(app);
 
     createMenu(app, c8);
     run(app, c8);
