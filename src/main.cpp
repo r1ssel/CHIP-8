@@ -1,14 +1,20 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+
+#ifdef _WIN32
+    #define SDL_MAIN_HANDLED
+    #include <SDL.h>
+    #include <SDL_ttf.h>
+#else
+    #include <SDL2/SDL.h>
+    #include <SDL2/SDL_ttf.h>
+#endif
 #include <iostream>
 #include <vector>
 #include <string>
 #include <functional>
 #include <filesystem>
 #include "chip8.h"
-
 #ifdef __EMSCRIPTEN__
-#include <emscripten.h>
+    #include <emscripten.h>
 #endif
 
 const int CHIP8_W = 64;
@@ -386,8 +392,7 @@ void renderGame(App& app, chip8& c8) {
 
 // ---------------- Главный цикл ----------------
 void main_loop(App& app, chip8& c8){
-    
-    Uint32 lastTimer = SDL_GetTicks();
+    static Uint32 lastTimer = SDL_GetTicks();
     SDL_Event e;
         while (SDL_PollEvent(&e)) {
             if (app.state == State::Menu)

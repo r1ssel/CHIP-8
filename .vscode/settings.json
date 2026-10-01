@@ -1,0 +1,10 @@
+{
+    "cmake.configureEnvironment": {
+        "CMAKE_PREFIX_PATH": "D:/libs/SDL2;D:/libs/SDL2_ttf"
+    },
+    "files.associations": {
+        "*.go": "go",
+        "functional": "cpp",
+        "vector": "cpp"
+    }
+}
