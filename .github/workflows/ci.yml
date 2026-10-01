@@ -12,7 +12,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y freeglut3-dev mesa-common-dev libglu1-mesa-dev libgtest-dev
+        sudo apt-get install -y libgtest-dev
         sudo apt-get install -y libsdl2-dev libsdl2-ttf-dev
         
     - name: Install fonts
