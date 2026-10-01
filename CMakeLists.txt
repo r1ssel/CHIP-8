@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
-project(CHIP-8)
+project(CHIP-8 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # --- Зависимости ---
-find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_ttf REQUIRED)
 
@@ -19,11 +18,10 @@ target_link_libraries(chip8 PRIVATE
     chip8_core
     SDL2::SDL2
     SDL2_ttf::SDL2_ttf
-    OpenGL::GL
-    ${GLU_LIBRARY})
+)
 
-# --- Тесты (опционально, если GTest найден) ---
-find_package(GTest REQUIRED)
+# --- Тесты ---
+find_package(GTest)
 if(GTest_FOUND)
     enable_testing()
     add_executable(chip8_tests tests/chip8_test.cpp)
