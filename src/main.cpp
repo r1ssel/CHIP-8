@@ -406,7 +406,7 @@ void main_loop(App& app, chip8& c8){
         } else {
             // Эмуляция
             for (int i = 0; i < CYCLES_PER_FRAME; i++)
-                c8.emulateCycle();
+                c8.run();
 
             // Таймеры 60 Гц
             Uint32 now = SDL_GetTicks();
