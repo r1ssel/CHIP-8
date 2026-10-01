@@ -13,7 +13,8 @@ add_library(chip8_core src/chip8.cpp)
 target_include_directories(chip8_core PUBLIC src)
 
 # --- Приложение ---
-add_executable(chip8 src/main.cpp)
+add_executable(chip8 src/main.cpp
+    src/gui.h)
 
 if(MINGW)
     set_target_properties(chip8 PROPERTIES
